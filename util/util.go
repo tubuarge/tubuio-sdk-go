@@ -21,13 +21,15 @@ func GetHttpGetUrl(baseUrl, shortId, method, tag, account string, args []string)
 	}
 
 	//TODO: check if account is required.
-	url += "?account=" + account
+	if strings.Compare(account, "") != 0 {
+		url += "?account=" + account
+	}
 
 	//args doesn't empty
 	if len(args) > 0 {
 		for _, elem := range args {
 			//TODO: check if args could take any integer value.
-			url += "?args=" + elem
+			url += "&args=" + elem
 		}
 	}
 	return url
