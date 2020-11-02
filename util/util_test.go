@@ -44,5 +44,33 @@ func TestGetHttpGetUrl(t *testing.T) {
 			t.Errorf("Got: '%s', Want: '%s'", gotUrl, table.url)
 		}
 	}
+}
 
+func TestGetHttpPostUrl(t *testing.T) {
+	tables := []struct {
+		url     string
+		shortId string
+		method  string
+		tag     string
+	}{
+		{base_url+"/int/shortId1/method1/tag1",
+			"shortId1", "method1", "tag1"},
+		{base_url+"/int/shortId2/method2",
+			"shortId2", "method2", ""},
+		{base_url+"/int/shortId3/method3/tag3",
+			"shortId3", "method3", "tag3"},
+		{base_url+"/int/shortId4/method4/tag4",
+			"shortId4", "method4", "tag4"},
+		{base_url+"/int/shortId5/method5",
+			"shortId5", "method5", ""},
+		{base_url+"/int/shortId6/method6",
+			"shortId6", "method6", ""},
+	}
+
+	for _, table := range tables {
+		gotUrl := GetHttpPostUrl(base_url, table.shortId, table.method, table.tag)
+		if strings.Compare(gotUrl, table.url) != 0 {
+			t.Errorf("Got: '%s', Want: '%s'", gotUrl, table.url)
+		}
+	}
 }
