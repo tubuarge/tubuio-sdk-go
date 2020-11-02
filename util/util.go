@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"net/url"
 )
 
 //requestBody used for marshalling JSON data.
@@ -14,25 +15,31 @@ type requestBody struct {
 
 //GetHttpGetUrl returns Http GET url for integration call.
 func GetHttpGetUrl(baseUrl, shortId, method, tag, account string, args []string) string {
-	url := baseUrl + "/int/" + strings.TrimSpace(shortId) + "/" + strings.TrimSpace(method)
-	//tag is not empty, include tag in the url
+	reqUrl := baseUrl + "/int/" + strings.TrimSpace(shortId) + "/" + strings.TrimSpace(method)
+	//tag is not empty, include tag in the reqUrl
 	if strings.Compare(tag, "") != 0 {
-		url += "/" + strings.TrimSpace(tag)
+		reqUrl += "/" + strings.TrimSpace(tag)
 	}
+
+	params := url.Values{}
 
 	//TODO: check if account is required.
 	if strings.Compare(account, "") != 0 {
-		url += "?account=" + account
+		reqUrl += "?"
+		params.Add("account", account)
 	}
 
 	//args doesn't empty
 	if len(args) > 0 {
+		if strings.Compare(account, "") == 0 {
+			reqUrl += "?"
+		}
 		for _, elem := range args {
 			//TODO: check if args could take any integer value.
-			url += "&args=" + elem
+			params.Add("args", elem)
 		}
 	}
-	return url
+	return reqUrl + params.Encode()
 }
 
 //GetHttpPostUrl returns Http POST url for integration send.
