@@ -23,8 +23,7 @@ func main() {
 
     //make the integration request if there is no error when making the 
     //request callResp variable contains request response as []byte slice. 
-    callResp, err := apiStruct.IntegrationCall("Contract ShortId", 
-    	"Method", "Tag", "", nil)
+    callResp, err := apiStruct.IntegrationCall("Contract ShortId", "Method", "Tag", "", nil)
     if err != nil {
         log.Fatal(err)
     }
@@ -34,8 +33,7 @@ func main() {
     
     //make the send request if there is no error when making the request
     //callResp variable contains request response as []byte slice.
-    sendResp, err := apiStruct.IntegrationSend("Contract ShortId", 
-        "Method", "Tag", "Account Address", []string{"arg1", "arg2"})
+    sendResp, err := apiStruct.IntegrationSend("Contract ShortId", "Method", "Tag", "Account Address", []string{"arg1", "arg2"})
     if err != nil {
         log.Fatal(err)
     }
