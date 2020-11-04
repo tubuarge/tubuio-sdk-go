@@ -8,16 +8,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 package api
 
 import (
-	"../util"
 	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"../util"
 )
 
 const (
-	BASE_URL = "https://prodservice-dot-dynamic-sun-260208.appspot.com"
-	TIMEOUT  = 10000
+	BaseUrl = "https://api.tubu.io"
 )
 
 //ApiStruct constructor struct of the api instance.
@@ -30,21 +30,13 @@ func NewApiStruct(apiKey string) *ApiStruct {
 	return &ApiStruct{ApiKey: apiKey}
 }
 
-func (a *ApiStruct) IntegrationCall(shortId, method, tag, account string, args []string) ([]byte, error) {
-	url := util.GetHttpGetUrl(BASE_URL, shortId, method, tag, account, args)
+func (a *ApiStruct) ContractCall(shortId, method, tag, account string, args ...interface{}) ([]byte, error) {
+	url := util.GetHttpPostUrl(BaseUrl, shortId, method, tag)
 
-	//TODO: check args type.
-	resp, err := a.doGet(url)
+	requestBody, err := util.GetBodyRequest(account, args)
 	if err != nil {
 		return nil, err
 	}
-	return resp, nil
-}
-
-func (a *ApiStruct) IntegrationSend(shortId, method, tag string, args []string, account string) ([]byte, error) {
-	url := util.GetHttpPostUrl(BASE_URL, shortId, method, tag)
-
-	requestBody, err := util.GetBodyRequest(account, args)
 
 	resp, err := a.doPost(url, requestBody)
 	if err != nil {
@@ -53,9 +45,27 @@ func (a *ApiStruct) IntegrationSend(shortId, method, tag string, args []string, 
 	return resp, nil
 }
 
+func (a *ApiStruct) ContractSend(shortId, method, tag, account string, args ...interface{}) ([]byte, error) {
+	url := util.GetHttpGetUrl(BaseUrl, shortId, method, tag, account, args)
+
+	resp, err := a.doGet(url)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
 //doGet handles get request.
 func (a *ApiStruct) doGet(url string) ([]byte, error) {
-	resp, err := http.Get(url)
+	client := http.Client{}
+
+	req, err := http.NewRequest("GET", url, nil)
+
+	//add headers
+	req.Header.Set("accept", "application/json")
+	req.Header.Set("ApiKey", a.ApiKey)
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -72,9 +82,7 @@ func (a *ApiStruct) doGet(url string) ([]byte, error) {
 //doPost handles post request.
 func (a *ApiStruct) doPost(url string, data []byte) ([]byte, error) {
 	//create client
-	client := http.Client{
-		Timeout: TIMEOUT,
-	}
+	client := http.Client{}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	if err != nil {
