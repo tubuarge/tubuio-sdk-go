@@ -3,18 +3,18 @@ package util
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 	"net/url"
+	"strings"
 )
 
 //requestBody used for marshalling JSON data.
 type requestBody struct {
-	args    []string `json:"args"`
-	account string   `json:"account"`
+	Args    []interface{} `json:"args"`
+	Account string        `json:"account"`
 }
 
-//GetHttpGetUrl returns Http GET url for integration call.
-func GetHttpGetUrl(baseUrl, shortId, method, tag, account string, args []string) string {
+//GetHttpGetUrl returns Http GET url for contract call.
+func GetHttpGetUrl(baseUrl, shortId, method, tag, account string, args []interface{}) string {
 	reqUrl := baseUrl + "/int/" + strings.TrimSpace(shortId) + "/" + strings.TrimSpace(method)
 	//tag is not empty, include tag in the reqUrl
 	if strings.Compare(tag, "") != 0 {
@@ -28,23 +28,21 @@ func GetHttpGetUrl(baseUrl, shortId, method, tag, account string, args []string)
 		reqUrl += "?"
 		params.Add("account", account)
 	}
-
 	//args doesn't empty
 	if len(args) > 0 {
 		if strings.Compare(account, "") == 0 {
 			reqUrl += "?"
 		}
 		for _, elem := range args {
-			//TODO: check if args could take any integer value.
-			params.Add("args", elem)
+			params.Add("args", fmt.Sprintf("%v", elem))
 		}
 	}
 	return reqUrl + params.Encode()
 }
 
-//GetHttpPostUrl returns Http POST url for integration send.
+//GetHttpPostUrl returns Http POST url for contract send.
 func GetHttpPostUrl(baseUrl, shortId, method, tag string) string {
-	url := baseUrl + "/int/" + strings.TrimSpace(shortId) + "/" + strings.TrimSpace(method)
+	url := baseUrl + "int/" + strings.TrimSpace(shortId) + "/" + strings.TrimSpace(method)
 
 	if strings.Compare(tag, "") != 0 {
 		url += "/" + strings.TrimSpace(tag)
@@ -53,15 +51,19 @@ func GetHttpPostUrl(baseUrl, shortId, method, tag string) string {
 	return url
 }
 
-func GetBodyRequest(account string, args []string) ([]byte, error) {
-	//init requestBody struct
-	requestBodyStruct := requestBody{
-		args:    args,
-		account: account,
+//GetBodyRequest returns a JSON object that contains account and args.
+func GetBodyRequest(account string, args []interface{}) ([]byte, error) {
+	requestBodyStruct := requestBody{}
+	if args != nil {
+		//add args to struct slice
+		for _, elem := range args {
+			requestBodyStruct.Args = append(requestBodyStruct.Args, elem)
+		}
 	}
 
-	//TODO: is account & args is required.
-	//get request body in json
+	requestBodyStruct.Account = account
+
+	//parse struct to JSON
 	requestBody, err := json.Marshal(requestBodyStruct)
 	if err != nil {
 		return nil, fmt.Errorf("error while creating request body: %v", err)
