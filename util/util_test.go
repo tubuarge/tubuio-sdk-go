@@ -78,16 +78,13 @@ func TestGetBodyRequest(t *testing.T) {
 	tables := []struct {
 		wantJson    string
 		account     string
-		argsInt     int
-		argsBool    bool
-		argsStr     string
-		argsSpecial string
+		args		[]interface{}
 	}{
-		{"{\"args\":[1,true,\"args1\",\"@\"],\"account\":\"account1\"}", "account1", 1, true, "args1", "@"},
+		{"{\"args\":[1,true,\"args1\",\"@\"],\"account\":\"account1\"}", "account1",[]interface{}{1, true, "args1", "@"}},
 	}
 
 	for _, table := range tables {
-		gotJson, err := GetBodyRequest(table.account, table.argsInt, table.argsBool, table.argsStr, table.argsSpecial)
+		gotJson, err := GetBodyRequest(table.account, table.args)
 		if err != nil {
 			t.Error(err)
 		}

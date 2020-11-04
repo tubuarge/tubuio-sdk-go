@@ -42,7 +42,7 @@ func GetHttpGetUrl(baseUrl, shortId, method, tag, account string, args []interfa
 
 //GetHttpPostUrl returns Http POST url for contract send.
 func GetHttpPostUrl(baseUrl, shortId, method, tag string) string {
-	url := baseUrl + "int/" + strings.TrimSpace(shortId) + "/" + strings.TrimSpace(method)
+	url := baseUrl + "/int/" + strings.TrimSpace(shortId) + "/" + strings.TrimSpace(method)
 
 	if strings.Compare(tag, "") != 0 {
 		url += "/" + strings.TrimSpace(tag)
