@@ -10,14 +10,23 @@ package api
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"time"
 
 	"../util"
 )
 
 const (
-	BaseUrl = "https://api.tubu.io"
+	BaseUrl = "https://prodservice-dot-dynamic-sun-260208.appspot.com"
+	Timeout = 10000 * time.Millisecond
+)
+
+type HttpClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+var (
+	Client HttpClient
 )
 
 //ApiStruct constructor struct of the api instance.
@@ -25,87 +34,84 @@ type ApiStruct struct {
 	ApiKey string
 }
 
+func init() {
+	Client = &http.Client{
+		Timeout: Timeout,
+	}
+}
+
 //NewApiStruct creates new api struct.
 func NewApiStruct(apiKey string) *ApiStruct {
 	return &ApiStruct{ApiKey: apiKey}
 }
 
-func (a *ApiStruct) ContractCall(shortId, method, tag, account string, args ...interface{}) ([]byte, error) {
-	url := util.GetHttpPostUrl(BaseUrl, shortId, method, tag)
+//Call calls the given call method of the contract's given tag version with given args.
+//returns response as http.Response pointer.
+func (a *ApiStruct) Call(shortId, method, tag, account string, args ...interface{}) (*http.Response, error) {
+	callUrl := util.GetHttpGetUrl(BaseUrl, shortId, method, tag, account, args)
+
+	req, err := a.createCallRequest(callUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := Client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+//Send calls the given send method of the contract's given tag version with given args.
+//returns response as http.Response pointer.
+func (a *ApiStruct) Send(shortId, method, tag, account string, args ...interface{}) (*http.Response, error) {
+	sendUrl := util.GetHttpPostUrl(BaseUrl, shortId, method, tag)
 
 	requestBody, err := util.GetBodyRequest(account, args)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := a.doPost(url, requestBody)
+	req, err := a.createSendRequest(sendUrl, requestBody)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := Client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
 }
 
-func (a *ApiStruct) ContractSend(shortId, method, tag, account string, args ...interface{}) ([]byte, error) {
-	url := util.GetHttpGetUrl(BaseUrl, shortId, method, tag, account, args)
-
-	resp, err := a.doGet(url)
+//createCallRequest creates a "GET" http.Request for Contract Calls with the given callUrl.
+func (a *ApiStruct) createCallRequest(callUrl string) (*http.Request, error) {
+	//create get request
+	req, err := http.NewRequest("GET", callUrl, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error while creating call request: %v", err)
 	}
-	return resp, nil
-}
 
-//doGet handles get request.
-func (a *ApiStruct) doGet(url string) ([]byte, error) {
-	client := http.Client{}
-
-	req, err := http.NewRequest("GET", url, nil)
-
-	//add headers
+	//set request headers
 	req.Header.Set("accept", "application/json")
 	req.Header.Set("ApiKey", a.ApiKey)
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("error while reading response body to byte slice: %v", err)
-	}
-	return body, nil
+	return req, nil
 }
 
-//doPost handles post request.
-func (a *ApiStruct) doPost(url string, data []byte) ([]byte, error) {
-	//create client
-	client := http.Client{}
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
+//createSendRequest creates a "POST" http.Request for Contract Sends with the given sendUrl
+//and data.
+func (a *ApiStruct) createSendRequest(sendUrl string, data []byte) (*http.Request, error) {
+	//create post request
+	req, err := http.NewRequest("POST", sendUrl, bytes.NewBuffer(data))
 	if err != nil {
-		return nil, fmt.Errorf("error while creating request: %v", err)
+		return nil, fmt.Errorf("error while creating send request: %v", err)
 	}
 
-	//set headers
+	//set request headers
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("accept", "application/json")
 	req.Header.Set("ApiKey", a.ApiKey)
 
-	//do request
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("error while reading response body to byte slice: %v", err)
-	}
-
-	return body, nil
+	return req, nil
 }
