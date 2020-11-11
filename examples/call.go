@@ -4,21 +4,21 @@ package main
 call.go demonstrates a sample Contract Call.
 to run:
 	go run call.go
- */
+*/
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 
-	tubu "github.com/tubuarge/tubuio-sdk-go/api"
+	"github.com/tubuarge/tubuio-sdk-go/api"
 )
 
 func main() {
 	//create new apiStruct
-	apiStruct := tubu.NewApiStruct("YOUR-API-KEY")
+	apiStruct := api.NewApiStruct("YOUR-API-KEY")
 
-	resp, err :=apiStruct.Call("de5baba74567442b", "getItems", "", "")
+	resp, err := apiStruct.Call("de5baba74567442b", "getItems", "", "")
 	if err != nil {
 		panic(err)
 	}
