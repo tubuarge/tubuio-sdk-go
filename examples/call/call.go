@@ -50,4 +50,6 @@ func main() {
 
 	//print "message" from parsed response
 	fmt.Println(respMap["message"])
+
+
 }
