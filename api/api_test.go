@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"../util"
+	"github.com/tubuarge/tubuio-sdk-go/util"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -11,12 +11,12 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"../api"
+	tubu "github.com/tubuarge/tubuio-sdk-go/api"
 )
 
 func main() {
 	//create new apiStruct
-	apiStruct := api.NewApiStruct("YOUR-API-KEY")
+	apiStruct := tubu.NewApiStruct("YOUR-API-KEY")
 
 	resp, err :=apiStruct.Call("de5baba74567442b", "getItems", "", "")
 	if err != nil {
