@@ -13,7 +13,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/tubuarge/tubuio-sdk-go/util"
+	"../util"
 )
 
 const (
