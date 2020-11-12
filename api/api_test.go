@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	apiStruct *ApiStruct
+	app *ContractStruct
 
 	getDoFunc func(req *http.Request) (*http.Response, error)
 )
@@ -41,8 +41,11 @@ func TestContractSend(t *testing.T) {
 		{"a877-352ca6df3bab9", "de5baba74567442b", "addItem", "", "", nil},
 	}
 	for _, table := range tables {
-		apiStruct = NewApiStruct(table.apiKey)
-		assert.NotNil(t, apiStruct)
+		app = NewContract(table.apiKey)
+		assert.NotNil(t, app)
+
+		contract := app.CreateContract(table.shortId)
+		assert.NotNil(t, contract)
 
 		successRespJSON := `{"data": "", "message": "ok"}`
 		r := ioutil.NopCloser(bytes.NewBuffer([]byte(successRespJSON)))
@@ -57,11 +60,11 @@ func TestContractSend(t *testing.T) {
 		assert.Nil(t, err)
 		assert.NotNil(t, bodyData)
 
-		request, err := apiStruct.createSendRequest(testUrl, bodyData)
+		request, err := contract.createSendRequest(testUrl, bodyData)
 		assert.Nil(t, err)
 		assert.NotNil(t, request)
 
-		resp, err := apiStruct.Send(table.shortId, table.method, table.tag,table.account, table.args)
+		resp, err := contract.Send(table.shortId, table.method, table.tag,table.account, table.args)
 
 		assert.NotNil(t, resp)
 		assert.Nil(t, err)
@@ -91,8 +94,11 @@ func TestContractCall(t *testing.T) {
 	}
 
 	for _, table := range tables {
-		apiStruct = NewApiStruct(table.apiKey)
-		assert.NotNil(t, apiStruct)
+		app = NewContract(table.apiKey)
+		assert.NotNil(t, app)
+
+		contract := app.CreateContract(table.shortId)
+		assert.NotNil(t, contract)
 
 		successRespJSON := `{"data": "", "message": "ok"}`
 		r := ioutil.NopCloser(bytes.NewBuffer([]byte(successRespJSON)))
@@ -104,11 +110,11 @@ func TestContractCall(t *testing.T) {
 
 		testUrl := util.GetHttpGetUrl(BaseUrl, table.shortId, "getItems", "", "", nil)
 
-		request, err := apiStruct.createCallRequest(testUrl)
+		request, err := contract.createCallRequest(testUrl)
 		assert.Nil(t, err)
 		assert.NotNil(t, request)
 
-		resp, err := apiStruct.Call(table.shortId, table.method, table.tag,table.account, table.args)
+		resp, err := contract.Call(table.shortId, table.method, table.tag,table.account, table.args)
 
 		assert.NotNil(t, resp)
 		assert.Nil(t, err)

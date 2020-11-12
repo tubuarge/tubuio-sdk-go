@@ -29,9 +29,14 @@ var (
 	Client HttpClient
 )
 
-//ApiStruct constructor struct of the api instance.
-type ApiStruct struct {
-	ApiKey string
+//ContractStruct constructor struct of the api instance.
+type ContractStruct struct {
+	ApiKey           string
+	ContractIDStruct contractIDStruct
+}
+
+type contractIDStruct struct {
+	ShortID string
 }
 
 func init() {
@@ -41,16 +46,21 @@ func init() {
 }
 
 //NewApiStruct creates new api struct.
-func NewApiStruct(apiKey string) *ApiStruct {
-	return &ApiStruct{ApiKey: apiKey}
+func NewContract(apiKey string) *ContractStruct {
+	return &ContractStruct{ApiKey: apiKey}
+}
+
+func (c *ContractStruct) CreateContract(shortID string) *ContractStruct {
+	c.ContractIDStruct.ShortID = shortID
+	return c
 }
 
 //Call calls the given call method of the contract's given tag version with given args.
 //returns response as http.Response pointer.
-func (a *ApiStruct) Call(shortId, method, tag, account string, args ...interface{}) (*http.Response, error) {
-	callUrl := util.GetHttpGetUrl(BaseUrl, shortId, method, tag, account, args)
+func (c *ContractStruct) Call(method, tag, account string, args ...interface{}) (*http.Response, error) {
+	callUrl := util.GetHttpGetUrl(BaseUrl, c.ContractIDStruct.ShortID, method, tag, account, args)
 
-	req, err := a.createCallRequest(callUrl)
+	req, err := c.createCallRequest(callUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -64,15 +74,15 @@ func (a *ApiStruct) Call(shortId, method, tag, account string, args ...interface
 
 //Send calls the given send method of the contract's given tag version with given args.
 //returns response as http.Response pointer.
-func (a *ApiStruct) Send(shortId, method, tag, account string, args ...interface{}) (*http.Response, error) {
-	sendUrl := util.GetHttpPostUrl(BaseUrl, shortId, method, tag)
+func (c *ContractStruct) Send(method, tag, account string, args ...interface{}) (*http.Response, error) {
+	sendUrl := util.GetHttpPostUrl(BaseUrl, c.ContractIDStruct.ShortID, method, tag)
 
 	requestBody, err := util.GetBodyRequest(account, args)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := a.createSendRequest(sendUrl, requestBody)
+	req, err := c.createSendRequest(sendUrl, requestBody)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +95,7 @@ func (a *ApiStruct) Send(shortId, method, tag, account string, args ...interface
 }
 
 //createCallRequest creates a "GET" http.Request for Contract Calls with the given callUrl.
-func (a *ApiStruct) createCallRequest(callUrl string) (*http.Request, error) {
+func (c *ContractStruct) createCallRequest(callUrl string) (*http.Request, error) {
 	//create get request
 	req, err := http.NewRequest("GET", callUrl, nil)
 	if err != nil {
@@ -94,14 +104,14 @@ func (a *ApiStruct) createCallRequest(callUrl string) (*http.Request, error) {
 
 	//set request headers
 	req.Header.Set("accept", "application/json")
-	req.Header.Set("ApiKey", a.ApiKey)
+	req.Header.Set("ApiKey", c.ApiKey)
 
 	return req, nil
 }
 
 //createSendRequest creates a "POST" http.Request for Contract Sends with the given sendUrl
 //and data.
-func (a *ApiStruct) createSendRequest(sendUrl string, data []byte) (*http.Request, error) {
+func (c *ContractStruct) createSendRequest(sendUrl string, data []byte) (*http.Request, error) {
 	//create post request
 	req, err := http.NewRequest("POST", sendUrl, bytes.NewBuffer(data))
 	if err != nil {
@@ -111,7 +121,7 @@ func (a *ApiStruct) createSendRequest(sendUrl string, data []byte) (*http.Reques
 	//set request headers
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("accept", "application/json")
-	req.Header.Set("ApiKey", a.ApiKey)
+	req.Header.Set("ApiKey", c.ApiKey)
 
 	return req, nil
 }

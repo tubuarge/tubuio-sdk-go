@@ -11,14 +11,16 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/tubuarge/tubuio-sdk-go/api"
+	tubu "github.com/tubuarge/tubuio-sdk-go/api"
 )
 
 func main() {
 	//create new apiStruct
-	apiStruct := api.NewApiStruct("YOUR-API-KEY")
+	app := tubu.NewContract("YOUR-API-KEY")
 
-	resp, err := apiStruct.Call("de5baba74567442b", "getItems", "", "")
+	contract := app.CreateContract("ShortID")
+
+	resp, err := contract.Call("addItem", "v2", "account", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -50,6 +52,4 @@ func main() {
 
 	//print "message" from parsed response
 	fmt.Println(respMap["message"])
-
-
 }

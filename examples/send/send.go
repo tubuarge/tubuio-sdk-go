@@ -16,9 +16,10 @@ import (
 
 func main() {
 	//create new apiStruct
-	apiStruct := tubu.NewApiStruct("YOUR-API-KEY")
+	app := tubu.NewContract("YOUR-API-KEY")
+	contract := app.CreateContract("shortID")
 
-	resp, err :=apiStruct.Send("de5baba74567442b", "addItem", "", "", "item", 123, true)
+	resp, err :=contract.Send("addItem", "", "", "item", 123, true)
 	if err != nil {
 		panic(err)
 	}
